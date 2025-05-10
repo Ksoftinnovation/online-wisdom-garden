@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { BookOpen, Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,16 +32,17 @@ const Navbar = () => {
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container flex justify-between items-center">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <BookOpen size={32} className="text-edu-primary" />
           <span className="font-bold text-xl md:text-2xl">EduLearn</span>
-        </a>
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
           <ul className="flex gap-8">
-            <li><a href="#" className="font-medium hover:text-edu-primary transition-colors">Home</a></li>
+            <li><Link to="/" className="font-medium hover:text-edu-primary transition-colors">Home</Link></li>
             <li><a href="#courses" className="font-medium hover:text-edu-primary transition-colors">Courses</a></li>
+            <li><Link to="/language-book" className="font-medium hover:text-edu-primary transition-colors">Language Book</Link></li>
             <li><a href="#categories" className="font-medium hover:text-edu-primary transition-colors">Categories</a></li>
             <li><a href="#instructors" className="font-medium hover:text-edu-primary transition-colors">Instructors</a></li>
           </ul>
@@ -60,8 +62,9 @@ const Navbar = () => {
       <div className={`md:hidden absolute w-full bg-white shadow-md transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
         <div className="container py-4">
           <ul className="flex flex-col gap-4">
-            <li><a href="#" className="block py-2 hover:text-edu-primary transition-colors">Home</a></li>
+            <li><Link to="/" className="block py-2 hover:text-edu-primary transition-colors">Home</Link></li>
             <li><a href="#courses" className="block py-2 hover:text-edu-primary transition-colors">Courses</a></li>
+            <li><Link to="/language-book" className="block py-2 hover:text-edu-primary transition-colors">Language Book</Link></li>
             <li><a href="#categories" className="block py-2 hover:text-edu-primary transition-colors">Categories</a></li>
             <li><a href="#instructors" className="block py-2 hover:text-edu-primary transition-colors">Instructors</a></li>
           </ul>
