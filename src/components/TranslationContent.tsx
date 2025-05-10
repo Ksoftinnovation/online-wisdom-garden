@@ -3,31 +3,42 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen } from "lucide-react";
+import { Search, BookOpen, Volume2 } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 // Sample animal names data from the uploaded images
 const animalTranslations = [
-  { id: 496, english: "Animal", tamil: "விலங்கு" },
-  { id: 497, english: "Cow", tamil: "பசு" },
-  { id: 500, english: "Buffalo", tamil: "எருமை" },
-  { id: 502, english: "Lion", tamil: "சிங்கம்" },
-  { id: 503, english: "Lioness", tamil: "பெண்சிங்கம்" },
-  { id: 505, english: "Panda", tamil: "காடிப்பாண்டா" },
-  { id: 506, english: "Horse", tamil: "குதிரை" },
-  { id: 513, english: "Fox", tamil: "நரி" },
-  { id: 515, english: "Pug", tamil: "குள்ளநரி" },
-  { id: 522, english: "Tiger", tamil: "புலி" },
-  { id: 524, english: "Cat", tamil: "பூனை" },
-  { id: 525, english: "Dog", tamil: "நாய்" },
-  { id: 531, english: "Pig", tamil: "பன்றி" },
-  { id: 533, english: "Monkey", tamil: "குரங்கு" },
-  { id: 534, english: "Donkey", tamil: "கழுதை" },
-  { id: 539, english: "Rabbit", tamil: "முயல்" },
-  { id: 540, english: "Elephant", tamil: "யானை" },
-  { id: 541, english: "Bear", tamil: "கரடி" },
-  { id: 545, english: "Crocodile", tamil: "முதலை" },
-  { id: 557, english: "Pet", tamil: "செல்லப்பிராணி" },
-  { id: 565, english: "Chameleon", tamil: "பச்சோந்தி" },
+  { id: 496, english: "Animal", tamil: "விலங்கு", pronunciation: "vilanggu" },
+  { id: 497, english: "Cow", tamil: "பசு", pronunciation: "pasu" },
+  { id: 500, english: "Buffalo", tamil: "எருமை", pronunciation: "erumai" },
+  { id: 502, english: "Lion", tamil: "சிங்கம்", pronunciation: "singam" },
+  { id: 503, english: "Lioness", tamil: "பெண்சிங்கம்", pronunciation: "pen-singam" },
+  { id: 505, english: "Panda", tamil: "காடிப்பாண்டா", pronunciation: "kadi-panda" },
+  { id: 506, english: "Horse", tamil: "குதிரை", pronunciation: "kudirai" },
+  { id: 513, english: "Fox", tamil: "நரி", pronunciation: "nari" },
+  { id: 515, english: "Pug", tamil: "குள்ளநரி", pronunciation: "kulla-nari" },
+  { id: 522, english: "Tiger", tamil: "புலி", pronunciation: "puli" },
+  { id: 524, english: "Cat", tamil: "பூனை", pronunciation: "poonai" },
+  { id: 525, english: "Dog", tamil: "நாய்", pronunciation: "naai" },
+  { id: 531, english: "Pig", tamil: "பன்றி", pronunciation: "pandri" },
+  { id: 533, english: "Monkey", tamil: "குரங்கு", pronunciation: "kurangu" },
+  { id: 534, english: "Donkey", tamil: "கழுதை", pronunciation: "kazhudai" },
+  { id: 539, english: "Rabbit", tamil: "முயல்", pronunciation: "muyal" },
+  { id: 540, english: "Elephant", tamil: "யானை", pronunciation: "yaanai" },
+  { id: 541, english: "Bear", tamil: "கரடி", pronunciation: "karadi" },
+  { id: 545, english: "Crocodile", tamil: "முதலை", pronunciation: "mudalai" },
+  { id: 557, english: "Pet", tamil: "செல்லப்பிராணி", pronunciation: "sellappirani" },
+  { id: 565, english: "Chameleon", tamil: "பச்சோந்தி", pronunciation: "pacchonthi" },
 ];
 
 const TranslationContent = () => {
@@ -86,12 +97,43 @@ const TranslationContent = () => {
                     {animal.id}
                   </div>
                   <div className="p-4 font-medium flex-1">{animal.english} (n)</div>
+                  
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="mr-2">
+                        <Volume2 size={18} className="text-purple-600" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-60">
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Pronunciation Guide</h4>
+                        <div className="text-sm text-gray-500">
+                          <p>English: <span className="font-medium">{animal.english}</span></p>
+                          <p>Tamil: <span className="font-medium">{animal.tamil}</span></p>
+                          <p className="mt-2">Pronounced as: <span className="font-bold text-purple-600">{animal.pronunciation}</span></p>
+                        </div>
+                        <div className="pt-2 text-xs text-gray-400 border-t">
+                          Click to hear pronunciation (coming soon)
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                     <BookOpen size={18} className="text-purple-600" />
                   </div>
-                  <div className="font-medium text-lg">{animal.tamil}</div>
+                  <div className="font-medium text-lg flex-1">{animal.tamil}</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                        {animal.pronunciation}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>How to pronounce in English</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </CardContent>
             </Card>
