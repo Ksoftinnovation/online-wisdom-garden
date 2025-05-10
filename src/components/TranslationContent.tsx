@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Volume2 } from "lucide-react";
+import { Search, BookOpen, Volume2, VolumeX, Music } from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,
@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample animal names data from the uploaded images
 const animalTranslations = [
@@ -44,6 +45,9 @@ const animalTranslations = [
 const TranslationContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [isPlaying, setIsPlaying] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
   
   const categories = ["All", "Mammals", "Reptiles", "Birds", "Fish", "Insects"];
   
@@ -51,6 +55,42 @@ const TranslationContent = () => {
     animal.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
     animal.tamil.includes(searchTerm.toLowerCase())
   );
+
+  // Function to play audio with text-to-speech
+  const playAudio = (text: string, language: string, animalId: number) => {
+    // Stop previous audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    // Set language code for speech synthesis
+    const langCode = language === 'english' ? 'en-US' : 'ta-IN';
+    
+    // Use browser's text-to-speech API
+    if ('speechSynthesis' in window) {
+      const speech = new SpeechSynthesisUtterance();
+      speech.text = text;
+      speech.lang = langCode;
+      speech.volume = 1;
+      speech.rate = 0.9;
+      speech.pitch = 1;
+      
+      setIsPlaying(animalId);
+      
+      speech.onend = () => {
+        setIsPlaying(null);
+      };
+      
+      speechSynthesis.speak(speech);
+    } else {
+      // If browser doesn't support speech synthesis
+      toast({
+        title: "Audio not supported",
+        description: "Your browser does not support text-to-speech functionality.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <section className="py-16 bg-white">
@@ -112,8 +152,21 @@ const TranslationContent = () => {
                           <p>Tamil: <span className="font-medium">{animal.tamil}</span></p>
                           <p className="mt-2">Pronounced as: <span className="font-bold text-purple-600">{animal.pronunciation}</span></p>
                         </div>
-                        <div className="pt-2 text-xs text-gray-400 border-t">
-                          Click to hear pronunciation (coming soon)
+                        <div className="flex space-x-2 mt-3">
+                          <Button 
+                            size="sm" 
+                            className="flex-1 bg-blue-500 hover:bg-blue-600" 
+                            onClick={() => playAudio(animal.english, 'english', animal.id)}
+                          >
+                            {isPlaying === animal.id ? <VolumeX size={16} /> : <Volume2 size={16} />} English
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="flex-1 bg-purple-500 hover:bg-purple-600" 
+                            onClick={() => playAudio(animal.tamil, 'tamil', animal.id)}
+                          >
+                            {isPlaying === animal.id ? <VolumeX size={16} /> : <Volume2 size={16} />} Tamil
+                          </Button>
                         </div>
                       </div>
                     </PopoverContent>
@@ -124,16 +177,36 @@ const TranslationContent = () => {
                     <BookOpen size={18} className="text-purple-600" />
                   </div>
                   <div className="font-medium text-lg flex-1">{animal.tamil}</div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
-                        {animal.pronunciation}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>How to pronounce in English</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                          {animal.pronunciation}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How to pronounce in English</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8 bg-blue-100 hover:bg-blue-200 text-blue-600" 
+                        onClick={() => playAudio(animal.english, 'english', animal.id)}
+                      >
+                        <Music size={14} />
+                      </Button>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8 bg-purple-100 hover:bg-purple-200 text-purple-600" 
+                        onClick={() => playAudio(animal.tamil, 'tamil', animal.id)}
+                      >
+                        <Music size={14} />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
