@@ -58,6 +58,11 @@ const TranslationContent = () => {
 
   // Function to play audio with text-to-speech
   const playAudio = (text: string, language: string, animalId: number) => {
+    // Cancel any ongoing speech synthesis
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
     // Stop previous audio if playing
     if (audioRef.current) {
       audioRef.current.pause();
@@ -81,7 +86,16 @@ const TranslationContent = () => {
         setIsPlaying(null);
       };
       
-      speechSynthesis.speak(speech);
+      speech.onerror = () => {
+        setIsPlaying(null);
+        toast({
+          title: "Speech synthesis error",
+          description: `Cannot play ${language} audio. Make sure your browser supports this language.`,
+          variant: "destructive",
+        });
+      };
+      
+      window.speechSynthesis.speak(speech);
     } else {
       // If browser doesn't support speech synthesis
       toast({
@@ -178,16 +192,18 @@ const TranslationContent = () => {
                   </div>
                   <div className="font-medium text-lg flex-1">{animal.tamil}</div>
                   <div className="flex items-center gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
-                          {animal.pronunciation}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How to pronounce in English</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                            {animal.pronunciation}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How to pronounce in English</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <div className="flex gap-1">
                       <Button 
                         size="icon" 
