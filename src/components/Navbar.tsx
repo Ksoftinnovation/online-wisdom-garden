@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { BookOpen, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BookOpen, Menu, X, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isAuthenticated, logout } = useUser();
+  const navigate = useNavigate();
 
   // Handle scroll event
   useEffect(() => {
@@ -28,6 +31,26 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleLoginClick = () => {
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+
+  const handleDashboardClick = () => {
+    if (user?.role === 'admin') {
+      navigate('/admin-dashboard');
+    } else {
+      navigate('/user-dashboard');
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container flex justify-between items-center">
@@ -47,8 +70,35 @@ const Navbar = () => {
             <li><a href="#instructors" className="font-medium hover:text-edu-primary transition-colors">Instructors</a></li>
           </ul>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="font-medium">Log in</Button>
-            <Button className="bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+            {isAuthenticated ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="font-medium flex items-center gap-2"
+                  onClick={handleDashboardClick}
+                >
+                  <User size={18} />
+                  {user?.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                </Button>
+                <Button 
+                  className="bg-edu-primary hover:bg-edu-primary/90"
+                  onClick={handleLogoutClick}
+                >
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="font-medium"
+                  onClick={handleLoginClick}
+                >
+                  Log in
+                </Button>
+                <Button className="bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -69,8 +119,35 @@ const Navbar = () => {
             <li><a href="#instructors" className="block py-2 hover:text-edu-primary transition-colors">Instructors</a></li>
           </ul>
           <div className="flex flex-col gap-3 mt-4">
-            <Button variant="ghost" className="w-full">Log in</Button>
-            <Button className="w-full bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+            {isAuthenticated ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={handleDashboardClick}
+                >
+                  <User size={18} />
+                  {user?.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                </Button>
+                <Button 
+                  className="w-full bg-edu-primary hover:bg-edu-primary/90"
+                  onClick={handleLogoutClick}
+                >
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={handleLoginClick}
+                >
+                  Log in
+                </Button>
+                <Button className="w-full bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+              </>
+            )}
           </div>
         </div>
       </div>
