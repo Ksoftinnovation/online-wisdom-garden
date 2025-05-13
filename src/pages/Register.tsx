@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,53 +10,75 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Lock } from "lucide-react";
+import { Mail, User, Lock } from "lucide-react";
 
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, isAuthenticated, user } = useUser();
+  const { register } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get the redirect path from location state or default to appropriate dashboard
-  const from = location.state?.from || "/";
-
-  // If already logged in, redirect to the appropriate dashboard
-  if (isAuthenticated) {
-    const redirectPath = user?.role === "admin" ? "/admin-dashboard" : "/user-dashboard";
-    return <Navigate to={redirectPath} replace />;
-  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Password mismatch",
+        description: "Passwords do not match. Please try again.",
+      });
+      return;
+    }
+
+    if (!termsAccepted) {
+      toast({
+        variant: "destructive",
+        title: "Terms not accepted",
+        description: "Please accept the terms and conditions to continue.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      const success = await login(email, password);
+      const success = await register(name, email, password);
       
       if (success) {
-        // Successfully logged in
+        // Successfully registered
         toast({
-          title: "Login successful",
-          description: "You have successfully logged in.",
+          title: "Registration successful",
+          description: "Your account has been created successfully.",
         });
+        navigate("/user-dashboard");
       } else {
-        // Failed login
+        // Failed registration
         toast({
           variant: "destructive",
-          title: "Login failed",
-          description: "Invalid email or password. Please try again.",
+          title: "Registration failed",
+          description: "Account with this email may already exist.",
         });
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Login error",
-        description: "An error occurred during login. Please try again.",
+        title: "Registration error",
+        description: "An error occurred during registration. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -69,13 +91,28 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Login</CardTitle>
+            <CardTitle className="text-2xl text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your account
+              Enter your details to register a new account
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -92,20 +129,13 @@ const Login = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a 
-                    href="#" 
-                    className="text-sm text-edu-primary hover:underline"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
                   <Input
                     id="password"
                     type="password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
@@ -113,17 +143,32 @@ const Login = () => {
                   />
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex items-start space-x-2 pt-2">
                 <Checkbox 
-                  id="rememberMe" 
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  id="terms" 
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked === true)}
                 />
                 <Label 
-                  htmlFor="rememberMe" 
+                  htmlFor="terms" 
                   className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Remember me
+                  I accept the <a href="#" className="text-edu-primary hover:underline">Terms and Conditions</a>
                 </Label>
               </div>
             </CardContent>
@@ -136,23 +181,23 @@ const Login = () => {
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2"></div>
-                    Signing in...
+                    Creating account...
                   </div>
                 ) : (
-                  "Sign in"
+                  "Create account"
                 )}
               </Button>
               <div className="text-center text-sm">
-                Don't have an account?{" "}
+                Already have an account?{" "}
                 <a 
-                  href="/register" 
+                  href="/login" 
                   className="text-edu-primary hover:underline font-medium"
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate("/register");
+                    navigate("/login");
                   }}
                 >
-                  Sign up
+                  Sign in
                 </a>
               </div>
             </CardFooter>
@@ -164,4 +209,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

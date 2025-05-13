@@ -36,6 +36,11 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  const handleRegisterClick = () => {
+    navigate('/register');
+    setIsMenuOpen(false);
+  };
+
   const handleLogoutClick = () => {
     logout();
     navigate('/');
@@ -96,7 +101,12 @@ const Navbar = () => {
                 >
                   Log in
                 </Button>
-                <Button className="bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+                <Button 
+                  className="bg-edu-primary hover:bg-edu-primary/90"
+                  onClick={handleRegisterClick}
+                >
+                  Sign up
+                </Button>
               </>
             )}
           </div>
@@ -145,7 +155,12 @@ const Navbar = () => {
                 >
                   Log in
                 </Button>
-                <Button className="w-full bg-edu-primary hover:bg-edu-primary/90">Sign up</Button>
+                <Button 
+                  className="w-full bg-edu-primary hover:bg-edu-primary/90"
+                  onClick={handleRegisterClick}
+                >
+                  Sign up
+                </Button>
               </>
             )}
           </div>

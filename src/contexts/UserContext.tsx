@@ -16,6 +16,7 @@ interface UserContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -68,6 +69,47 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Register function
+  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    // Simulate API call with a delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Check if user already exists
+        const existingUser = mockUsers.find(u => u.email === email);
+        
+        if (existingUser) {
+          setIsLoading(false);
+          resolve(false);
+          return;
+        }
+        
+        // Create new user
+        const newUserId = `${mockUsers.length + 1}`;
+        const newUser = {
+          id: newUserId,
+          name,
+          email,
+          password,
+          role: "user" as UserRole
+        };
+        
+        // In a real app, we would save this to a database
+        // For this mock, we're adding to our array but in reality this would be reset on page reload
+        mockUsers.push(newUser);
+        
+        // Remove password before storing in state/localStorage
+        const { password: pwd, ...userWithoutPassword } = newUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+        
+        setIsLoading(false);
+        resolve(true);
+      }, 1000);
+    });
+  };
+
   // Logout function
   const logout = () => {
     setUser(null);
@@ -79,6 +121,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated: !!user,
     isLoading,
     login,
+    register,
     logout,
   };
 
