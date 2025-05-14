@@ -9,14 +9,18 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  verified?: boolean;
 }
 
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  tempUser: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  verifyOTP: (otp: string) => Promise<boolean>;
+  resendOTP: () => Promise<boolean>;
   logout: () => void;
 }
 
@@ -25,12 +29,13 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Mock users for demo purposes
 const mockUsers = [
-  { id: "1", name: "John Doe", email: "user@example.com", password: "user123", role: "user" as UserRole },
-  { id: "2", name: "Admin User", email: "admin@example.com", password: "admin123", role: "admin" as UserRole },
+  { id: "1", name: "John Doe", email: "user@example.com", password: "user123", role: "user" as UserRole, verified: true },
+  { id: "2", name: "Admin User", email: "admin@example.com", password: "admin123", role: "admin" as UserRole, verified: true },
 ];
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [tempUser, setTempUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is already logged in (from localStorage)
@@ -54,6 +59,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         );
         
         if (matchedUser) {
+          // Check if user is verified
+          if (!matchedUser.verified) {
+            setTempUser({ ...matchedUser, password: undefined });
+            setIsLoading(false);
+            resolve(false);
+            return;
+          }
+          
           // Remove password before storing
           const { password, ...userWithoutPassword } = matchedUser;
           setUser(userWithoutPassword);
@@ -92,19 +105,63 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           name,
           email,
           password,
-          role: "user" as UserRole
+          role: "user" as UserRole,
+          verified: false
         };
         
         // In a real app, we would save this to a database
         // For this mock, we're adding to our array but in reality this would be reset on page reload
         mockUsers.push(newUser);
         
-        // Remove password before storing in state/localStorage
+        // Store user in temp state (not in localStorage yet)
         const { password: pwd, ...userWithoutPassword } = newUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+        setTempUser(userWithoutPassword);
         
         setIsLoading(false);
+        resolve(true);
+      }, 1000);
+    });
+  };
+
+  // OTP verification function
+  const verifyOTP = async (otp: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    // Simulate API call with delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // In a real app, we would validate the OTP
+        // For this mock, we'll accept any 6-digit OTP
+        if (otp.length === 6 && tempUser) {
+          // Update the user's verification status
+          const userIndex = mockUsers.findIndex(u => u.email === tempUser.email);
+          if (userIndex !== -1) {
+            mockUsers[userIndex].verified = true;
+            
+            // Set the user as verified and authenticated
+            const verifiedUser = { ...tempUser, verified: true };
+            setUser(verifiedUser);
+            setTempUser(null);
+            localStorage.setItem("user", JSON.stringify(verifiedUser));
+            
+            setIsLoading(false);
+            resolve(true);
+            return;
+          }
+        }
+        
+        setIsLoading(false);
+        resolve(false);
+      }, 1000);
+    });
+  };
+
+  // Resend OTP function
+  const resendOTP = async (): Promise<boolean> => {
+    // Simulate API call with delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // In a real app, we would generate and send a new OTP
         resolve(true);
       }, 1000);
     });
@@ -113,15 +170,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = () => {
     setUser(null);
+    setTempUser(null);
     localStorage.removeItem("user");
   };
 
   const value = {
     user,
+    tempUser,
     isAuthenticated: !!user,
     isLoading,
     login,
     register,
+    verifyOTP,
+    resendOTP,
     logout,
   };
 

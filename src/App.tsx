@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import LanguageBook from "./pages/LanguageBook";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import OtpVerification from "./pages/OtpVerification";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/language-book" element={<LanguageBook />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-otp" element={<OtpVerification />} />
             
             {/* Protected routes */}
             <Route 

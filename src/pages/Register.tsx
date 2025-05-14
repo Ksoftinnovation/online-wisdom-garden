@@ -60,12 +60,12 @@ const Register = () => {
       const success = await register(name, email, password);
       
       if (success) {
-        // Successfully registered
+        // Successfully registered, redirect to OTP verification
         toast({
           title: "Registration successful",
-          description: "Your account has been created successfully.",
+          description: "Please verify your account with the code sent to your email.",
         });
-        navigate("/user-dashboard");
+        navigate("/verify-otp");
       } else {
         // Failed registration
         toast({
