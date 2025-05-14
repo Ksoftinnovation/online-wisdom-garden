@@ -12,6 +12,11 @@ export interface User {
   verified?: boolean;
 }
 
+// Extended user type for internal use with password
+interface UserWithPassword extends User {
+  password: string;
+}
+
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -28,7 +33,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Mock users for demo purposes
-const mockUsers = [
+const mockUsers: UserWithPassword[] = [
   { id: "1", name: "John Doe", email: "user@example.com", password: "user123", role: "user" as UserRole, verified: true },
   { id: "2", name: "Admin User", email: "admin@example.com", password: "admin123", role: "admin" as UserRole, verified: true },
 ];
@@ -61,14 +66,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (matchedUser) {
           // Check if user is verified
           if (!matchedUser.verified) {
-            setTempUser({ ...matchedUser, password: undefined });
+            // Remove password before storing in state
+            const { password: _, ...userWithoutPassword } = matchedUser;
+            setTempUser(userWithoutPassword);
             setIsLoading(false);
             resolve(false);
             return;
           }
           
           // Remove password before storing
-          const { password, ...userWithoutPassword } = matchedUser;
+          const { password: _, ...userWithoutPassword } = matchedUser;
           setUser(userWithoutPassword);
           localStorage.setItem("user", JSON.stringify(userWithoutPassword));
           setIsLoading(false);
@@ -100,7 +107,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         
         // Create new user
         const newUserId = `${mockUsers.length + 1}`;
-        const newUser = {
+        const newUser: UserWithPassword = {
           id: newUserId,
           name,
           email,
@@ -114,7 +121,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         mockUsers.push(newUser);
         
         // Store user in temp state (not in localStorage yet)
-        const { password: pwd, ...userWithoutPassword } = newUser;
+        const { password: _, ...userWithoutPassword } = newUser;
         setTempUser(userWithoutPassword);
         
         setIsLoading(false);
